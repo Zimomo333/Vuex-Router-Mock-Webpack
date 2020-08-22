@@ -5,6 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "element-ui": "^2.13.2",
+    "js-cookie": "^2.2.1",
     "vue": "^2.6.11",
     "vue-router": "^3.4.3",
     "vuex": "^3.5.1"
