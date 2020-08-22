@@ -18,6 +18,7 @@
 ### 安装项目依赖
 
 ```shell
+npm i vuex -S
 npm init
 npm i vue -S
 
