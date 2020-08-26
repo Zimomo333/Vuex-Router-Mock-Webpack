@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
+    "axios": "^0.20.0",
     "element-ui": "^2.13.2",
     "js-cookie": "^2.2.1",
     "vue": "^2.6.11",

@@ -1,14 +1,20 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import { getToken, setToken, removeToken,getUserInfo, setUserInfo, removeUserInfo } from '@/utils/auth'
+import { login, logout, getInfo } from './api/user'
+import { getToken, setToken, removeToken, setUserInfo, removeUserInfo } from './utils/auth'
 
 Vue.use(Vuex)
 
 const store = new Vuex.Store({
     state: {
         token: getToken(),
-        name: getUserInfo().name,
-        avatar: getUserInfo().avatar
+        name: '',
+        avatar: ''
+    },
+    getters: {
+        token: state => state.token,
+        avatar: state => state.avatar,
+        name: state => state.name
     },
     mutations: {
         RESET_STATE: (state) => {
@@ -61,12 +67,19 @@ const store = new Vuex.Store({
                 logout(state.token).then(() => {
                     removeToken() // must remove  token  first
                     removeUserInfo()
-                    resetRouter()
                     commit('RESET_STATE')
                     resolve()
                 }).catch(error => {
                     reject(error)
                 })
+            })
+        },
+        // remove token
+        resetToken({ commit }) {
+            return new Promise(resolve => {
+                removeToken() // must remove  token  first
+                commit('RESET_STATE')
+                resolve()
             })
         }
     }
