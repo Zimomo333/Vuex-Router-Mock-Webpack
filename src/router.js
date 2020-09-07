@@ -6,26 +6,56 @@ import { getToken } from './utils/auth'
 Vue.use(VueRouter)
 
 export const routes = [
-    { 
-        path: '/',
-        redirect: '/info',
-        component: () => import('./views/home.vue'),
-        children: [
-            { 
-                path: '/info',
-                title: '个人中心',
-                icon: 'el-icon-user-solid',
-                component: () => import('./views/info.vue')
-            },
-            { 
-                path: '/orders',
-                title: '我的订单',
-                icon: 'el-icon-s-order',
-                component: () => import('./views/orders.vue')
-            }
-        ]
+  {
+    path: '//',     // 转义 / ，防止自动涉略为空
+    component: () => import('./views/home.vue'),
+    meta: { 
+      title: '首页',
+      icon: 'el-icon-s-order'
     },
-    { path: '/login', component: () => import('./views/login.vue') }
+    hidden: true,
+    children: [
+      { 
+        path: '/info',
+        component: () => import('./views/info.vue'),
+        meta: { 
+            title: '个人中心',
+            icon: 'el-icon-user-solid'
+        }
+      },
+      {
+        path: '/orders',        // 以 / 开头的嵌套路径会被当作根路径
+        component: () => import('./views/orders/index.vue'),    // 可写成{render: (e) => e("router-view")}，避免新建空router-view文件
+        meta: { 
+            title: '订单管理',
+            icon: 'el-icon-s-order'
+        },
+        children: [
+          {
+            path: 'my-orders',      // 子路由不要加 /
+            component: () => import('./views/orders/myOrders.vue'),
+            meta: { 
+                title: '我的订单',
+                icon: 'el-icon-s-order'
+            }
+          },
+          {
+            path: 'submit',
+            component: () => import('./views/orders/submit.vue'),
+            meta: { 
+                title: '提交订单',
+                icon: 'el-icon-s-order'
+            }
+          }
+        ]
+      },
+    ]
+  },
+  {
+    path: '/login',
+    component: () => import('./views/login.vue'),
+    hidden: true
+  }
 ]
 
 const router = new VueRouter({
