@@ -7,7 +7,7 @@ Vue.use(VueRouter)
 
 export const routes = [
   {
-    path: '//',     // 转义 / ，防止自动涉略为空
+    path: '//',     // 转义 / ，防止自动省略为空
     component: () => import('./views/home.vue'),
     meta: { 
       title: '首页',
@@ -62,6 +62,7 @@ const router = new VueRouter({
     routes // (缩写) 相当于 routes: routes
 })
 
+//路由全局前置守卫，验证token
 router.beforeEach(async(to, from, next) => {
   
     // determine whether the user has logged in

@@ -30,7 +30,7 @@ module.exports = {
     plugins: [
         new VueLoaderPlugin(),              // vue-loader伴生插件，必须有！！！
         new HtmlWebpackPlugin({             // 自动生成注入js的index主页
-            title: 'Vue-wepack demo',
+            title: 'Vuex-Router-Webpack demo',
             template: './public/index.html' // 自定义index模板
         })
     ]
