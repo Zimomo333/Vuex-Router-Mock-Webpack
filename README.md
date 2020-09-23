@@ -82,7 +82,7 @@ npm i html-webpack-plugin -D                // 自动生成注入js的index.html
 
 ## Vue-Router
 
-#### router.js
+### router.js
 
 ```javascript
 import Vue from 'vue'
@@ -196,7 +196,7 @@ export default router
 
 ## Vuex
 
-#### store.js
+### store.js
 
 ```js
 import Vue from 'vue'
@@ -297,7 +297,7 @@ export default store
 
 ## Webpack
 
-#### webpack.config.js
+### webpack.config.js
 
 ```javascript
 const path = require('path')
@@ -341,7 +341,7 @@ module.exports = {
 
 
 
-#### `public/index.html`模板
+### `public/index.html`模板
 
 默认生成的`index.html `没有 id="app" 挂载点，必须使用自定义模板
 
@@ -365,7 +365,7 @@ module.exports = {
 
 ## 组件
 
-#### SidebarItem.vue(导航栏组件)
+### SidebarItem.vue(导航栏组件)
 
 组件自调用实现嵌套导航栏
 
