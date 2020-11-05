@@ -3,13 +3,14 @@ const VueLoaderPlugin = require('vue-loader/lib/plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const webpack = require('webpack')
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 module.exports = {
   entry: './src/main.js',
   output: {
     path: path.resolve(__dirname, './dist'),
     filename: '[name]-[chunkhash].js',  // entry中指定的包名
-    chunkFilename: '[chunkhash].js', // 以hash值作为包名
+    chunkFilename: '[name]-[chunkhash].js', // 以hash值作为包名
   },
   mode: 'production',
   devServer: {
@@ -47,7 +48,8 @@ module.exports = {
     那么受影响的 module 所在的 chunk 的 [chunkhash] 就会发生改变，导致缓存失效。
     因此使用文件路径的 hash 作为 moduleId 来避免这个问题。
     */
-    new webpack.HashedModuleIdsPlugin()
+    new webpack.HashedModuleIdsPlugin(),
+    new BundleAnalyzerPlugin()
   ],
   optimization: {
     /*
@@ -65,7 +67,27 @@ module.exports = {
       因为我们使用了 html-webpack-plugin 来动态插入 <script> 标签，entry 被拆成多个 chunk 也能自动被插入到 html 中，
       所以我们可以配置成 all, 把 entry chunk 也拆分了
       */
-      chunks: 'all'
+      chunks: 'all',
+      cacheGroups: {
+        libs: {
+          name: "chunk-libs",
+          test: /[\\/]node_modules[\\/]/,
+          priority: 10,
+          chunks: "initial" // 只打包初始时依赖的第三方
+        },
+        elementUI: {
+          name: "chunk-elementUI", // 单独将 elementUI 拆包
+          priority: 20, // 权重要大于 libs 和 app 不然会被打包进 libs 或者 app
+          test: /[\\/]node_modules[\\/]element-ui[\\/]/
+        },
+        commons: {
+          name: "chunk-commons",
+          test: path.resolve("src/components"), // 可自定义拓展你的规则
+          minChunks: 2, // 最小共用次数
+          priority: 5,
+          reuseExistingChunk: true
+        }
+      }
     }
   }
 }

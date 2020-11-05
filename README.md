@@ -13,7 +13,7 @@
 3. Vue-Router（路由、拦截功能）
 4. Vuex（中心化登录权限）
 5. token存入Cookie，用户信息存入localStorage
-6. Wepack打包压缩，热加载本地服务器
+6. Wepack 代码压缩，热加载本地服务器，以Hash值命名包更新缓存，优化分包策略
 
 
 
@@ -415,15 +415,85 @@ module.exports = {
 
 ### 测试
 
-第一次构建
+**第一次构建**
 
-<div><img src="https://raw.githubusercontent.com/Zimomo333/Vuex-Router-Webpack/master/picture/first_hash.JPG"></div>
+<img src="https://raw.githubusercontent.com/Zimomo333/Vuex-Router-Webpack/master/picture/first_hash.JPG" width="300px" height="540px" />
 
-新增一个test.vue，路由文件新增一个路径，第二次构建
+新增一个test.vue，路由文件新增一个路径，**第二次构建**
 
-<div><img src="https://raw.githubusercontent.com/Zimomo333/Vuex-Router-Webpack/master/picture/second_hash.JPG"></div>
+<img src="https://raw.githubusercontent.com/Zimomo333/Vuex-Router-Webpack/master/picture/second_hash.JPG" width="300px" height="580px" />
 
-可以看到大部分包的hash不变，缓存仍有效
+**可以看到大部分包的hash值不变，缓存仍有效**
+
+
+
+### 优化分包策略（参考自 字节跳动 花裤衩 大佬）
+
+按照体积大小、共用率、更新频率重新划分包，使其尽可能的利用浏览器缓存。
+
+![img](https://user-gold-cdn.xitu.io/2018/8/7/16513e5b6a73ac96?w=1482&h=756&f=jpeg&s=150509)
+
+- 基础类库 chunk-libs
+
+它是构成我们项目必不可少的一些基础类库，比如 `vue`+`vue-router`+`vuex`+`axios` 这种标准的全家桶，它们的升级频率都不高，但每个页面都需要它们。（一些全局被共用的，体积不大的第三方库也可以放在其中：比如 nprogress、js-cookie、clipboard 等）
+
+- UI 组件库
+
+理论上 UI 组件库也可以放入 libs 中，但这里单独拿出来的原因是： 它实在是比较大，不管是 `Element-UI`还是`Ant Design` gizp 压缩完都可能要 200kb 左右，它可能比 libs 里面所有的库加起来还要大不少，而且 UI 组件库的更新频率也相对的比 libs 要更高一点。我们不时的会升级 UI 组件库来解决一些现有的 bugs 或使用它的一些新功能。所以建议将 UI 组件库也单独拆成一个包。
+
+- 自定义组件/函数 chunk-commons
+
+这里的 commons 主要分为 **必要**和**非必要**。
+
+必要组件是指那些项目里必须加载它们才能正常运行的组件或者函数。比如你的路由表、全局 state、全局侧边栏/Header/Footer 等组件、自定义 Svg 图标等等。这些其实就是你在入口文件中依赖的东西，它们都会默认打包到`app.js`中。
+
+非必要组件是指被大部分页面使用，但在入口文件 entry 中未被引入的模块。比如：一个管理后台，你封装了很多 select 或者  table 组件，由于它们的体积不会很大，它们都会被默认打包到到每一个懒加载页面的 chunk  中，这样会造成不少的浪费。你有十个页面引用了它，就会包重复打包十次。所以应该将那些被大量共用的组件单独打包成`chunk-commons`。
+
+不过还是要结合具体情况来看。一般情况下，你也可以将那些*非必要组件函数*也在入口文件 entry 中引入，和*必要组件函数*一同打包到`app.js`之中也是没什么问题的。
+
+- 低频组件
+
+低频组件和上面的共用组件 `chunk-commons` 最大的区别是，它们只会在一些特定业务场景下使用，比如富文本编辑器、`js-xlsx`前端 excel 处理库等。一般这些库都是第三方的且大于 30kb，所以 webpack 4 会默认打包成一个独立的 bundle。也无需特别处理。小于 30kb 的情况下会被打包到具体使用它的页面 bundle 中。
+
+- 业务代码
+
+这部分就是我们平时经常写的业务代码。一般都是按照页面的划分来打包，比如在 vue 中，使用[路由懒加载](https://router.vuejs.org/zh/guide/advanced/lazy-loading.html)的方式加载页面 `component: () => import('./Foo.vue')` webpack 默认会将它打包成一个独立的 bundle。
+
+配置代码：
+
+```javascript
+splitChunks: {
+  chunks: "all",
+  cacheGroups: {
+    libs: {
+      name: "chunk-libs",
+      test: /[\\/]node_modules[\\/]/,
+      priority: 10,
+      chunks: "initial" // 只打包初始时依赖的第三方
+    },
+    elementUI: {
+      name: "chunk-elementUI", // 单独将 elementUI 拆包
+      priority: 20, // 权重要大于 libs 和 app 不然会被打包进 libs 或者 app
+      test: /[\\/]node_modules[\\/]element-ui[\\/]/
+    },
+    commons: {
+      name: "chunk-commons",
+      test: path.resolve("src/components"), // 可自定义拓展你的规则
+      minChunks: 2, // 最小共用次数
+      priority: 5,
+      reuseExistingChunk: true
+    }
+  }
+};
+```
+
+**打包前**
+
+<div align=center><img src="https://raw.githubusercontent.com/Zimomo333/Vuex-Router-Webpack/master/picture/before_split.PNG"></div>
+
+**打包后**
+
+<div align=center><img src="https://raw.githubusercontent.com/Zimomo333/Vuex-Router-Webpack/master/picture/after_split.PNG"></div>
 
 
 
