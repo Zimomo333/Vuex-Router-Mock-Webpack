@@ -431,7 +431,7 @@ module.exports = {
 
 按照体积大小、共用率、更新频率重新划分包，使其尽可能的利用浏览器缓存。
 
-![img](https://user-gold-cdn.xitu.io/2018/8/7/16513e5b6a73ac96?w=1482&h=756&f=jpeg&s=150509)
+<img src="https://user-gold-cdn.xitu.io/2018/8/7/16513e5b6a73ac96?w=1482&h=756&f=jpeg&s=150509" width="700px" height="357px" />
 
 - 基础类库 chunk-libs
 
@@ -485,6 +485,24 @@ splitChunks: {
     }
   }
 };
+```
+
+### 测试
+
+使用 **webpack-bundle-analyzer** 插件可视化分析包结构
+
+```shell
+npm install --save-dev webpack-bundle-analyzer
+```
+
+```javascript
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+ 
+module.exports = {
+  plugins: [
+    new BundleAnalyzerPlugin()
+  ]
+}
 ```
 
 **打包前**
