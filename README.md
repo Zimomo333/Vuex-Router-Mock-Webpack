@@ -361,6 +361,74 @@ module.exports = {
 
 
 
+### 以Hash值命名包更新缓存
+
+```javascript
+{
+  output: {
+    /*
+    代码中引用的文件（js、css、图片等）会根据配置合并为一个或多个包，我们称一个包为 chunk。
+    每个 chunk 包含多个 modules。无论是否是 js，webpack 都将引入的文件视为一个 module。
+    chunkFilename 用来配置这个 chunk 输出的文件名。
+
+    [chunkhash]：这个 chunk 的 hash 值，文件发生变化时该值也会变。使用 [chunkhash] 作为文件名可以防止浏览器读取旧的缓存文件。
+
+    还有一个占位符 [id]，编译时每个 chunk 会有一个id。
+    我们在这里不使用它，因为这个 id 是个递增的数字，增加或减少一个chunk，都可能导致其他 chunk 的 id 发生改变，导致缓存失效。
+    */
+    chunkFilename: '[chunkhash].js',
+  }
+  
+  plugins: [
+    /*
+    使用文件路径的 hash 作为 moduleId。
+    虽然我们使用 [chunkhash] 作为 chunk 的输出名，但仍然不够。
+    因为 chunk 内部的每个 module 都有一个 id，webpack 默认使用递增的数字作为 moduleId。
+    如果引入了一个新文件或删掉一个文件，可能会导致其他文件的 moduleId 也发生改变，
+    那么受影响的 module 所在的 chunk 的 [chunkhash] 就会发生改变，导致缓存失效。
+    因此使用文件路径的 hash 作为 moduleId 来避免这个问题。
+    */
+    new webpack.HashedModuleIdsPlugin()
+  ],
+
+  optimization: {
+    /*
+    上面提到 chunkFilename 指定了 chunk 打包输出的名字，那么文件名存在哪里了呢？
+    它就存在引用它的文件中。这意味着一个 chunk 文件名发生改变，会导致引用这个 chunk 文件也发生改变。
+
+    runtimeChunk 设置为 true, webpack 就会把 chunk 文件名全部存到一个单独的 chunk 中，
+    这样更新一个文件只会影响到它所在的 chunk 和 runtimeChunk，避免了引用这个 chunk 的文件也发生改变。
+    */
+    runtimeChunk: true,
+
+    splitChunks: {
+      /*
+      默认 entry 的 chunk 不会被拆分
+      因为我们使用了 html-webpack-plugin 来动态插入 <script> 标签，entry 被拆成多个 chunk 也能自动被插入到 html 中，
+      所以我们可以配置成 all, 把 entry chunk 也拆分了
+      */
+      chunks: 'all'
+    }
+  }
+}
+```
+
+### 测试
+
+第一次构建
+
+<div><img src="https://raw.githubusercontent.com/Zimomo333/Vuex-Router-Webpack/master/picture/first_hash.JPG"></div>
+
+新增一个test.vue，路由文件新增一个路径，第二次构建
+
+<div><img src="https://raw.githubusercontent.com/Zimomo333/Vuex-Router-Webpack/master/picture/second_hash.JPG"></div>
+
+可以看到大部分包的hash不变，缓存仍有效
+
+
+
+
+
 
 
 ## 组件

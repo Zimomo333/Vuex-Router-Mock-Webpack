@@ -46,7 +46,7 @@ export const routes = [
                 title: '提交订单',
                 icon: 'el-icon-s-order'
             }
-          }
+          },
         ]
       },
     ]
